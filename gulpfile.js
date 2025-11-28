@@ -3,6 +3,7 @@ import { deleteAsync } from 'del';
 import Graceful from 'node-graceful';
 import {
   cliArgs,
+  compressFiles,
   createGithubRelease,
   createLabelInJiraIssues,
   createReleaseNotesFromCurrentTag,
@@ -110,14 +111,16 @@ export function copyToDist() {
 export const build = gulp.parallel(copyToDist, buildJs, buildTranslations);
 
 export async function buildTestAppCss() {
+  await deleteAsync('test-app/dist/**/*.{css,css.br,css.gz,css.map,css.map.br,css.map.gz}');
   await less.compile({
     inputFile: 'test-app/src/main.less',
-    outputFile: 'test-app/dist/main.css',
+    outputFile: 'test-app/dist/[name]-[hash].css',
     optimize: !!cliArgs.optimize
   });
 }
 
 export async function buildTestAppJs() {
+  await deleteAsync('test-app/dist/**/*.{js,js.br,js.gz,js.map,js.map.br,js.map.gz}');
   if (currentAppBuildContext) {
     await currentAppBuildContext.rebuild();
   } else {
@@ -128,12 +131,19 @@ export async function buildTestAppJs() {
       minify: !!cliArgs.optimize,
       incremental: isInWatchMode,
       inject: ['./test-app/src/polyfills.js'],
-      metaFilePath: './test-app/dist/meta.json'
+      metaFilePath: './test-app/dist/.meta.json'
     });
   }
 }
 
-export const buildTestApp = gulp.parallel(buildTestAppCss, buildTranslations, buildTestAppJs);
+export async function optimizeTestAppAssets() {
+  if (cliArgs.optimize) {
+    await compressFiles({ sourceDir: ['./test-app/dist'] });
+  }
+}
+
+export const compileTestApp = gulp.parallel(buildTestAppCss, buildTranslations, buildTestAppJs);
+export const buildTestApp = gulp.series(compileTestApp, optimizeTestAppAssets);
 
 export async function maildevUp() {
   await maildevContainer.ensureIsRunning();
@@ -224,7 +234,7 @@ export const up = gulp.parallel(mongoUp, minioUp, maildevUp);
 
 export const down = gulp.parallel(mongoDown, minioDown, maildevDown);
 
-export const serve = gulp.series(gulp.parallel(up, build), buildTestApp, startServer);
+export const serve = gulp.series(clean, gulp.parallel(up, build), buildTestApp, startServer);
 
 export const verify = gulp.series(lint, test, build);
 

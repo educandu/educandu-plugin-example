@@ -1,4 +1,5 @@
 import url from 'node:url';
+import { glob } from 'glob';
 import path from 'node:path';
 import parseBool from 'parseboolean';
 import educandu from '@educandu/educandu';
@@ -6,8 +7,6 @@ import customResolvers from './custom-resolvers.js';
 import ExampleController from '../../src/example-controller.js';
 
 const thisDir = path.dirname(url.fileURLToPath(import.meta.url));
-
-const jsWithChecksumPathPattern = /\w+-[A-Z0-9]{8}\.js$/;
 
 const config = {
   appName: 'educandu-test-app',
@@ -27,12 +26,15 @@ const config = {
     {
       publicPath: '/',
       destination: path.resolve(thisDir, '../dist'),
-      setHeaders: (res, requestPath) => {
-        const maxAge = jsWithChecksumPathPattern.test(requestPath) ? 604800 : 0;
-        res.setHeader('Cache-Control', `public, max-age=${maxAge}`);
+      setHeaders: res => {
+        res.setHeader('Cache-Control', 'public, max-age=604800');
       }
     }
   ],
+  entryPoints: {
+    scripts: (await glob(`main-${'[A-Z0-9]'.repeat(8)}.js`, { cwd: path.resolve(thisDir, '../dist') })).map(x => `/${x}`),
+    styles: (await glob(`main-${'[A-Z0-9]'.repeat(8)}.css`, { cwd: path.resolve(thisDir, '../dist') })).map(x => `/${x}`)
+  },
   resources: [path.resolve(thisDir, '../../src/translations.json')],
   additionalControllers: [ExampleController],
   sessionSecret: process.env.TEST_APP_SESSION_SECRET,

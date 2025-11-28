@@ -23,8 +23,8 @@
   "dependencies": {},
   "devDependencies": {
     "@ant-design/icons": "5.5.1",
-    "@educandu/dev-tools": "^14.3.0",
-    "@educandu/educandu": "^3.49.0",
+    "@educandu/dev-tools": "^15.1.0",
+    "@educandu/educandu": "^4.0.0",
     "@educandu/node-jsx-loader": "^4.0.0",
     "@educandu/rooms-auth-lambda": "^9.0.0",
     "@vitest/coverage-v8": "^1.0.2",
@@ -34,6 +34,7 @@
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "glob": "^11.0.3",
     "gulp": "^4.0.2",
     "mkdirp": "^3.0.1",
     "parseboolean": "^1.0.0",
@@ -41,7 +42,7 @@
   },
   "peerDependencies": {
     "@ant-design/icons": ">=5.5.1",
-    "@educandu/educandu": ">=3.49.0",
+    "@educandu/educandu": ">=4.0.0",
     "antd": ">=5.21.2",
     "joi": ">=17.11.0",
     "react": ">=18.2.0",
